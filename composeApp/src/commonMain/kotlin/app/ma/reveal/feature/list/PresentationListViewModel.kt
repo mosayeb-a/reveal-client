@@ -19,26 +19,13 @@ data class PresentationListState(
 
 class PresentationListViewModel(
     private val getPresentations: GetPresentations,
-    private val getPresentationById: GetPresentationById,
-    presentationId: String?,
-    private val fromAssets: Boolean,
-    private val fromFiles: Boolean
 ) : ViewModel() {
     private val _state = MutableStateFlow(PresentationListState())
     val state = _state.asStateFlow()
 
     init {
-        loadPresentations()
-        if (presentationId != null) {
-            viewModelScope.launch {
-                loadPresentationById(presentationId)
-            }
-        }
-    }
-
-    fun loadPresentations() {
         viewModelScope.launch {
-            getPresentations(files = fromFiles, asset = fromAssets).fold(
+            getPresentations(files = true, asset = true).fold(
                 onSuccess = { newPresentations ->
                     _state.update { currentState ->
                         val currentPresentations = currentState.slides.associateBy { it.id }
@@ -59,27 +46,5 @@ class PresentationListViewModel(
                 }
             )
         }
-    }
-
-    private suspend fun loadPresentationById(id: String) {
-        _state.update { it.copy(isLoading = true) }
-        getPresentationById(id, fromAssets, fromFiles).fold(
-            onSuccess = { presentation ->
-                _state.update { currentState ->
-                    val currentPresentations = currentState.slides.associateBy { it.id }
-                    val updatedPresentations =
-                        currentPresentations + (presentation.id to presentation)
-                    currentState.copy(
-                        isLoading = false,
-                        slides = updatedPresentations.values.toList()
-                            .sortedByDescending { it.addedDate }
-                    )
-                }
-            },
-            onFailure = { e ->
-                Napier.e("failed to load presentation with id $id: ${e.message}", e)
-                _state.update { it.copy(isLoading = false) }
-            }
-        )
     }
 }

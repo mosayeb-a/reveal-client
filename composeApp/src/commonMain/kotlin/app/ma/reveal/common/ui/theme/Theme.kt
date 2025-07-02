@@ -15,8 +15,11 @@ private val LightColorScheme = lightColorScheme(
     onSecondary = DarkBlue,
     surface = Color.White,
     onSurface = Color.Black,
-    background = Color.White
+    background = Color.White,
+    tertiary = LightBlue,
+    onTertiary = Color.White
 )
+
 @Composable
 fun RevealTheme(
     content: @Composable () -> Unit

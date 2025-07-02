@@ -45,20 +45,21 @@ kotlin {
             implementation(libs.koin.compose.viewmodel)
             api(libs.koin.core)
 
+            api(project(":webview"))
+
             implementation(libs.kotlinx.datetime)
             implementation(libs.kotlin.serialization.json)
             implementation(libs.jetbrains.compose.navigation)
             implementation(libs.ui.backhandler)
 
-            implementation("org.jetbrains.compose.material:material-icons-core:1.7.3")
-
-            api(libs.compose.webview.multiplatform)
+            implementation(libs.material.icons.core)
             implementation(libs.filekit.core)
 
             implementation(libs.ktor.server.core)
             implementation(libs.ktor.server.cio)
 
-            implementation("io.github.aakira:napier:2.7.1")
+            implementation(libs.napier)
+            implementation(libs.material3.adaptive)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

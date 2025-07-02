@@ -25,13 +25,19 @@ import app.ma.reveal.common.ui.theme.DarkGray
 fun PresentationItem(
     presentation: Presentation,
     onClick: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    isSelected: Boolean
 ) {
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .background(if (presentation.isAsset)
-                MaterialTheme.colorScheme.surface.copy(alpha = .7f) else MaterialTheme.colorScheme.surface)
+            .background(
+                if (isSelected) {
+                    MaterialTheme.colorScheme.tertiary
+                } else {
+                    MaterialTheme.colorScheme.surface
+                }
+            )
             .clickable { onClick(presentation.path) }
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
@@ -41,7 +47,11 @@ fun PresentationItem(
         ) {
             Text(
                 text = presentation.name,
-                style = MaterialTheme.typography.titleMedium,
+                style = MaterialTheme.typography.titleMedium
+                    .copy(
+                        color = if (isSelected) MaterialTheme.colorScheme.onTertiary else
+                            MaterialTheme.colorScheme.onSurface
+                    ),
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.weight(0.85f)
@@ -49,14 +59,17 @@ fun PresentationItem(
             Spacer(Modifier.width(18.dp))
             Text(
                 text = if (presentation.isAsset) "Example" else formatDate(presentation.addedDate),
-                style = MaterialTheme.typography.bodyMedium.copy(color = DarkGray),
+                style = MaterialTheme.typography.bodyMedium.copy(
+                    color = if (isSelected) MaterialTheme.colorScheme.onTertiary else
+                        DarkGray
+                ),
             )
         }
         Spacer(Modifier.height(4.dp))
         Text(
             text = "${presentation.slideCount} slide${if (presentation.slideCount != 1) "s" else ""}",
             style = MaterialTheme.typography.bodySmall
-                .copy(color = Blue.copy(alpha = .8f)),
+                .copy(color = if (isSelected) MaterialTheme.colorScheme.onTertiary else Blue.copy(alpha = .8f)),
             modifier = Modifier.padding()
         )
     }

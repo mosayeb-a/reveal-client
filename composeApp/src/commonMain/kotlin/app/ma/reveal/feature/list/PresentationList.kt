@@ -43,7 +43,8 @@ fun PresentationList(
     onPresentationSelected: (String) -> Unit,
     onCreateClicked: () -> Unit,
     modifier: Modifier = Modifier,
-    viewState: PresentationListState
+    viewState: PresentationListState,
+    selectedPath: String? = null
 ) {
     val lazyListState = rememberLazyListState()
     var isExtended by remember { mutableStateOf(true) }
@@ -109,7 +110,8 @@ fun PresentationList(
                         PresentationItem(
                             presentation = presentation,
                             onClick = onPresentationSelected,
-                            modifier = Modifier.fillMaxWidth()
+                            modifier = Modifier.fillMaxWidth(),
+                            isSelected = presentation.path == selectedPath
                         )
                         HorizontalDivider(
                             thickness = 1.dp,

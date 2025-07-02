@@ -40,6 +40,7 @@ fun RevealWebView(
 ) {
     var initialized by remember { mutableStateOf(false) }
 
+    // todo: must be refactored, KCEF should be initialized only once
     LaunchedEffect(Unit) {
         kcefSetup(
             onInitialized = { initialized = true },
@@ -49,6 +50,7 @@ fun RevealWebView(
             }
         )
     }
+
     DisposableEffect(state) {
         state.webSettings.apply {
             isJavaScriptEnabled = true

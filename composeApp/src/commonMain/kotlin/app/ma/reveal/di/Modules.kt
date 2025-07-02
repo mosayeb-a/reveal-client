@@ -32,15 +32,7 @@ val appModule = module {
     single { GoToSlide() }
     single { GetPresentationById(get()) }
 
-    viewModel { (presentationId: String?, fromAssets: Boolean, fromFiles: Boolean) ->
-        PresentationListViewModel(
-            get(),
-            get(),
-            presentationId,
-            fromAssets,
-            fromFiles
-        )
-    }
+    viewModel { PresentationListViewModel(get()) }
     viewModel { CreateSlidesViewModel(get(), get(), get(), get()) }
     viewModel { (path: String) -> PresentViewModel(get(), get(), get(), path) }
 }
