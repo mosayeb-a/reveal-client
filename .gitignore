@@ -1,0 +1,10 @@
+/gradlew.bat
+.gradle/
+build/
+.idea/
+.kotlin
+composeApp/build
+composeApp/cache
+composeApp/kcef-bundle/*
+composeApp/kcef-bundle/locales
+
