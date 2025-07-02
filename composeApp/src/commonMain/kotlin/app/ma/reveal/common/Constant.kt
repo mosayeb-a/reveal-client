@@ -50,4 +50,3 @@ const val HTML_TEMPLATE = """
     </body>
     </html>
 """
-

@@ -4,7 +4,9 @@ import androidx.compose.animation.AnimatedContentScope
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
@@ -37,6 +39,8 @@ fun AppNavigation(
             val args = it.toRoute<PresentationListScreen>()
             val viewModel: PresentationListViewModel =
                 koinViewModel { parametersOf(args.presentationId, args.fromAssets, args.fromFiles) }
+            val state by viewModel.state.collectAsStateWithLifecycle()
+
             PresentationList(
                 onPresentationSelected = { path ->
                     navController.navigate(PresentScreen(path))
@@ -44,29 +48,49 @@ fun AppNavigation(
                 onCreateClicked = {
                     navController.navigate(CreateSlidesScreen)
                 },
-                viewModel = viewModel
-            )
+                viewState = state,
+
+                )
         }
         baseComposable<CreateSlidesScreen> {
             val viewModel: CreateSlidesViewModel = koinViewModel()
+            val state by viewModel.state.collectAsStateWithLifecycle()
+            val webViewState by viewModel.webViewState.collectAsStateWithLifecycle()
+            val navigator by viewModel.navigator.collectAsStateWithLifecycle()
+
             CreateSlides(
-                onNavigateToPresentationList = { id ->
-                    navController.navigate(
-                        route = PresentationListScreen(presentationId = id)
-                    ) {
-                        popUpTo<PresentationListScreen> { inclusive = false }
+                viewState = state,
+                webViewState = webViewState,
+                navigator = navigator,
+                onBack = { navController.popBackStack() },
+                onSavedClick = {
+                    viewModel.savePresentation { id ->
+                        navController.navigate(
+                            route = PresentationListScreen(presentationId = id)
+                        ) {
+                            popUpTo<PresentationListScreen> { inclusive = false }
+                        }
                     }
                 },
-                onBack = { navController.popBackStack() },
-                viewModel = viewModel
+                onPreviousSlideClick = { viewModel.previousSlide(it) },
+                onNextSlideClick = { viewModel.nextSlide(it) },
+                onAddSlideClick = { content, nav, state ->
+                    viewModel.addSlide(content, nav, state!!)
+                },
+                onDiscardPresentation = { viewModel.discardPresentation() }
             )
         }
+
         baseComposable<PresentScreen> {
             val args = it.toRoute<PresentScreen>()
-            val viewModel: PresentViewModel =
-                koinViewModel { parametersOf(args.path) }
+            val viewModel: PresentViewModel = koinViewModel { parametersOf(args.path) }
+            val webViewSate by viewModel.webViewState.collectAsStateWithLifecycle()
+            val navigator by viewModel.navigator.collectAsStateWithLifecycle()
             Present(
-                viewModel = viewModel
+                webViewSate = webViewSate!!,
+                navigator = navigator,
+                onPreviousSlideClicked = { viewModel.previousSlide(navigator) },
+                onNextSlideClicked = { viewModel.nextSlide(navigator) },
             )
         }
     }

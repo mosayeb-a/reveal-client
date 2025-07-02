@@ -11,6 +11,7 @@ import app.ma.reveal.domain.usecase.GoToNextSlide
 import app.ma.reveal.domain.usecase.GoToPreviousSlide
 import app.ma.reveal.domain.usecase.GoToSlide
 import app.ma.reveal.domain.usecase.SavePresentation
+import com.multiplatform.webview.web.WebContent
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
 import io.github.aakira.napier.Napier
@@ -47,6 +48,20 @@ class CreateSlidesViewModel(
 ) : ViewModel() {
     private val _state = MutableStateFlow(CreateSlidesState())
     val state = _state.asStateFlow()
+
+    private val _webViewState = MutableStateFlow<WebViewState?>(null)
+    val webViewState = _webViewState.asStateFlow()
+
+    private val _navigator = MutableStateFlow(WebViewNavigator(viewModelScope))
+    val navigator = _navigator.asStateFlow()
+
+    init {
+        val htmlFile = PlatformFile(
+            Path(FileKit.filesDir.absolutePath(), "$REVEAL_DIR/$SLIDES_DIR")
+        ) / "${UUID.randomUUID()}.html"
+        val initialUrl = if (htmlFile.exists()) "file://${htmlFile.absolutePath()}" else ""
+        _webViewState.value = WebViewState(WebContent.Url(initialUrl))
+    }
 
     private fun generateHtmlContent(slides: List<Slide>, presentationId: String): String {
         val slidesHtml = slides.mapIndexed { index, slide ->
@@ -93,7 +108,7 @@ class CreateSlidesViewModel(
                 }
 
                 _state.value.htmlFilePath?.let { path ->
-                    webViewState.content = com.multiplatform.webview.web.WebContent.Url(path)
+                    webViewState.content = WebContent.Url(path)
                     viewModelScope.launch(Dispatchers.Main) {
                         navigator.evaluateJavaScript("window.location.reload(true);")
                         goToSlide(navigator = navigator, slidesCount = _state.value.slides.size)
@@ -136,7 +151,7 @@ class CreateSlidesViewModel(
                     onSuccess = { path ->
                         viewModelScope.launch(Dispatchers.Main) {
                             _state.update { it.copy(isLoading = false) }
-                            onSuccess(path)
+                            onSuccess(presentationId)
                         }
                     },
                     onFailure = { error ->
@@ -161,6 +176,7 @@ class CreateSlidesViewModel(
                     htmlFile.delete(mustExist = false)
                 }
                 _state.update { CreateSlidesState(isLoading = false) }
+                _webViewState.update { WebViewState(WebContent.Url("")) }
             } catch (e: Exception) {
                 Napier.e("failed to discard presentation: ${e.message}", e)
                 _state.update { it.copy(isLoading = false) }

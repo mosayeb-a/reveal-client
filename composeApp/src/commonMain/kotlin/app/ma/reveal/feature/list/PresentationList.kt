@@ -31,7 +31,6 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.ma.reveal.common.ui.Appbar
 import app.ma.reveal.common.ui.EmptyStateFaces
 import app.ma.reveal.common.ui.LoadingBox
@@ -44,9 +43,8 @@ fun PresentationList(
     onPresentationSelected: (String) -> Unit,
     onCreateClicked: () -> Unit,
     modifier: Modifier = Modifier,
-    viewModel: PresentationListViewModel
+    viewState: PresentationListState
 ) {
-    val state by viewModel.state.collectAsStateWithLifecycle()
     val lazyListState = rememberLazyListState()
     var isExtended by remember { mutableStateOf(true) }
 
@@ -97,7 +95,7 @@ fun PresentationList(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            if (state.slides.isEmpty()) {
+            if (viewState.slides.isEmpty()) {
                 Message(
                     message = "No presentations yet. Create one using the + button.",
                     faces = EmptyStateFaces.suggestion
@@ -107,7 +105,7 @@ fun PresentationList(
                     state = lazyListState,
                     modifier = Modifier.fillMaxSize()
                 ) {
-                    items(state.slides, key = { it.path }) { presentation ->
+                    items(viewState.slides, key = { it.path }) { presentation ->
                         PresentationItem(
                             presentation = presentation,
                             onClick = onPresentationSelected,
@@ -124,7 +122,7 @@ fun PresentationList(
                 }
             }
 
-            if (state.isLoading) {
+            if (viewState.isLoading) {
                 LoadingBox()
             }
         }

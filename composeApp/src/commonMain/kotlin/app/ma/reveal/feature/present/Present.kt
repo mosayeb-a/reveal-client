@@ -11,15 +11,17 @@ import androidx.compose.ui.Modifier
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import app.ma.reveal.common.ui.LoadingBox
 import app.ma.reveal.common.ui.RevealWebView
+import com.multiplatform.webview.web.WebViewNavigator
+import com.multiplatform.webview.web.WebViewState
 
 @Composable
 fun Present(
     modifier: Modifier = Modifier,
-    viewModel: PresentViewModel
+    webViewSate: WebViewState,
+    navigator: WebViewNavigator,
+    onPreviousSlideClicked: () -> Unit,
+    onNextSlideClicked: () -> Unit
 ) {
-    val webViewSate by viewModel.webViewState.collectAsStateWithLifecycle()
-    val navigator by viewModel.navigator.collectAsStateWithLifecycle()
-
     Scaffold(
         modifier = modifier.fillMaxSize()
     ) { paddingValues ->
@@ -31,17 +33,17 @@ fun Present(
         ) {
             RevealWebView(
                 modifier = Modifier.fillMaxSize(),
-                state = webViewSate!!,
+                state = webViewSate,
                 navigator = navigator,
                 onCreated = {
 
                 },
-                onPreviousClick = { viewModel.previousSlide(navigator) },
-                onNextClick = { viewModel.nextSlide(navigator) },
+                onPreviousClick = onPreviousSlideClicked,
+                onNextClick = onNextSlideClicked,
                 showSlideNavigation = true
             )
 
-            if (webViewSate!!.isLoading) {
+            if (webViewSate.isLoading) {
                 LoadingBox()
             }
         }

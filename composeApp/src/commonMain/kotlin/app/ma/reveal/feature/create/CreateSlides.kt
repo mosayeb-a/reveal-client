@@ -22,11 +22,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -34,53 +32,34 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
 import app.ma.reveal.common.BOTTOM_BAR_HEIGHT
-import app.ma.reveal.common.INDEX_FILE
-import app.ma.reveal.common.REVEAL_DIR
-import app.ma.reveal.common.SLIDES_DIR
 import app.ma.reveal.common.ui.Appbar
 import app.ma.reveal.common.ui.EmptyStateFaces
 import app.ma.reveal.common.ui.LoadingBox
 import app.ma.reveal.common.ui.Message
 import app.ma.reveal.common.ui.RevealWebView
-import com.multiplatform.webview.web.rememberWebViewNavigator
-import com.multiplatform.webview.web.rememberWebViewState
-import io.github.vinceglb.filekit.FileKit
-import io.github.vinceglb.filekit.PlatformFile
-import io.github.vinceglb.filekit.absolutePath
-import io.github.vinceglb.filekit.div
-import io.github.vinceglb.filekit.exists
-import io.github.vinceglb.filekit.filesDir
-import kotlinx.io.files.Path
+import com.multiplatform.webview.web.WebViewNavigator
+import com.multiplatform.webview.web.WebViewState
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
 fun CreateSlides(
-    onNavigateToPresentationList: (presentationId: String) -> Unit,
     modifier: Modifier = Modifier,
     onBack: () -> Unit,
-    viewModel: CreateSlidesViewModel
+    onSavedClick: () -> Unit,
+    viewState: CreateSlidesState,
+    webViewState: WebViewState?,
+    navigator: WebViewNavigator,
+    onPreviousSlideClick: (navigator: WebViewNavigator) -> Unit,
+    onNextSlideClick: (navigator: WebViewNavigator) -> Unit,
+    onAddSlideClick: (content: String, navigator: WebViewNavigator, webViewState: WebViewState?) -> Unit,
+    onDiscardPresentation: () -> Unit
 ) {
-    val state by viewModel.state.collectAsState()
     var showAddSlideDialog by remember { mutableStateOf(false) }
     var slideContent by remember { mutableStateOf("") }
     var showSaveDialog by remember { mutableStateOf(false) }
-    val coroutineScope = rememberCoroutineScope()
-
-    val url = remember {
-        val htmlFile = PlatformFile(
-            Path(
-                FileKit.filesDir.absolutePath(),
-                "$REVEAL_DIR/$SLIDES_DIR"
-            )
-        ) / INDEX_FILE
-        if (htmlFile.exists()) "file://${htmlFile.absolutePath()}" else ""
-    }
-
-    val navigator = rememberWebViewNavigator()
-    val webViewState = rememberWebViewState(url = url)
 
     BackHandler(true) {
-        if (state.slides.isEmpty()) {
+        if (viewState.slides.isEmpty()) {
             onBack()
         } else {
             showSaveDialog = true
@@ -98,11 +77,7 @@ fun CreateSlides(
                     )
                 }
                 IconButton(
-                    onClick = {
-                        viewModel.savePresentation { presentationId ->
-                            onNavigateToPresentationList(presentationId)
-                        }
-                    }
+                    onClick = onSavedClick
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Done,
@@ -115,7 +90,7 @@ fun CreateSlides(
             ExtendedFloatingActionButton(
                 modifier = Modifier.padding(
                     bottom = animateDpAsState(
-                        targetValue = if (state.slides.count() > 1) BOTTOM_BAR_HEIGHT else 0.dp,
+                        targetValue = if (viewState.slides.count() > 1) BOTTOM_BAR_HEIGHT else 0.dp,
                         animationSpec = tween(durationMillis = 300)
                     ).value
                 ),
@@ -137,25 +112,25 @@ fun CreateSlides(
                 .fillMaxSize(),
             contentAlignment = Alignment.Center
         ) {
-            if (state.slides.isEmpty()) {
+            if (viewState.slides.isEmpty()) {
                 Message(
                     message = "No slides added yet. Use the + button to add a slide.",
                     faces = EmptyStateFaces.suggestion
                 )
-            } else {
+            } else if (webViewState != null) {
                 RevealWebView(
                     modifier = Modifier.fillMaxSize(),
                     state = webViewState,
                     navigator = navigator,
                     onError = { },
-                    onPreviousClick = { viewModel.previousSlide(navigator) },
-                    onNextClick = { viewModel.nextSlide(navigator) },
-                    showSlideNavigation = state.slides.count() > 1,
+                    onPreviousClick = { onPreviousSlideClick(navigator) },
+                    onNextClick = { onNextSlideClick(navigator) },
+                    showSlideNavigation = viewState.slides.count() > 1,
                     onCreated = {}
                 )
             }
 
-            if (state.isLoading) {
+            if (viewState.isLoading) {
                 LoadingBox()
             }
         }
@@ -179,11 +154,7 @@ fun CreateSlides(
                     Button(
                         onClick = {
                             if (slideContent.isNotBlank()) {
-                                viewModel.addSlide(
-                                    content = slideContent,
-                                    navigator = navigator,
-                                    webViewState = webViewState
-                                )
+                                onAddSlideClick(slideContent, navigator, webViewState)
                                 showAddSlideDialog = false
                                 slideContent = ""
                             }
@@ -214,11 +185,9 @@ fun CreateSlides(
                     TextButton(
                         onClick = {
                             showSaveDialog = false
-                            viewModel.savePresentation { id ->
-                                onNavigateToPresentationList(id)
-                            }
+                            onSavedClick()
                         },
-                        enabled = state.slides.count() >= 1,
+                        enabled = viewState.slides.count() >= 1,
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
                     ) {
                         Text("Save")
@@ -228,7 +197,7 @@ fun CreateSlides(
                     TextButton(
                         onClick = {
                             showSaveDialog = false
-                            viewModel.discardPresentation()
+                            onDiscardPresentation()
                             onBack()
                         },
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
