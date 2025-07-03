@@ -14,13 +14,14 @@ import app.ma.reveal.feature.create.CreateSlidesViewModel
 import app.ma.reveal.feature.list.PresentationListViewModel
 import app.ma.reveal.feature.present.PresentViewModel
 import org.koin.core.context.startKoin
+import org.koin.core.module.Module
 import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModel
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.bind
 import org.koin.dsl.module
 
-val appModule = module {
+val sharedModule = module {
     singleOf(::AssetDataSource)
     singleOf(::FileDataSource)
     singleOf(::PresentationRepositoryImpl).bind<PresentationRepository>()
@@ -37,9 +38,11 @@ val appModule = module {
     viewModel { (path: String) -> PresentViewModel(get(), get(), get(), path) }
 }
 
+expect val platformModule: Module
+
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
-        modules(appModule)
+        modules(sharedModule, platformModule)
     }
 }

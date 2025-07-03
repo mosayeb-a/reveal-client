@@ -4,8 +4,6 @@ import androidx.compose.ui.unit.dp
 
 const val REVEAL_DIR = "reveal"
 const val SLIDES_DIR = "slides"
-const val INDEX_FILE = "presentation.html"
-const val FILE_POLLING_INTERVAL_MS = 2000L
 val BOTTOM_BAR_HEIGHT = 56.dp
 
 const val HTML_TEMPLATE = """
@@ -50,3 +48,5 @@ const val HTML_TEMPLATE = """
     </body>
     </html>
 """
+
+const val DATA_STORE_FILE_NAME = "reveal.preferences_pb"

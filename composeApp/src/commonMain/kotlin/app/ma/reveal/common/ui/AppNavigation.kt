@@ -81,7 +81,8 @@ fun AppNavigation(
                 onAddSlideClick = { content, nav, state ->
                     viewModel.addSlide(content, nav, state!!)
                 },
-                onDiscardPresentation = { viewModel.discardPresentation() }
+                onDiscardPresentation = { viewModel.discardPresentation() },
+                deviceConfiguration = deviceConfiguration
             )
         }
     }
@@ -114,7 +115,11 @@ private fun TopLevelRoute(
             startPane = {
                 PresentationList(
                     onPresentationSelected = { path ->
-                        nestedNavController.navigate(PresentScreen(path))
+                        if (path != selectedPath) {
+                            nestedNavController.navigate(PresentScreen(path)) {
+                                popUpTo("empty") { inclusive = false }
+                            }
+                        }
                     },
                     onCreateClicked = onCreateClicked,
                     viewState = state,
@@ -133,15 +138,16 @@ private fun TopLevelRoute(
                             modifier = Modifier
                                 .background(MaterialTheme.colorScheme.secondary)
                                 .fillMaxSize(),
-                            message = "No presentation selected.\nPlease choose one from the list on the left.",
+                            message = "No presentation selected.\nChoose one from the list on the left.",
                             faces = EmptyStateFaces.suggestion
                         )
                     }
 
                     baseComposable<PresentScreen> {
                         val args = it.toRoute<PresentScreen>()
-                        val presentViewModel: PresentViewModel =
-                            koinViewModel { parametersOf(args.path) }
+                        val presentViewModel: PresentViewModel = koinViewModel(
+                            key = args.path
+                        ) { parametersOf(args.path) }
                         val webViewState by presentViewModel.webViewState.collectAsStateWithLifecycle()
                         val navigator by presentViewModel.navigator.collectAsStateWithLifecycle()
 

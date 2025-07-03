@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
 import androidx.compose.ui.unit.dp
 import app.ma.reveal.common.BOTTOM_BAR_HEIGHT
+import app.ma.reveal.common.DeviceConfiguration
 import app.ma.reveal.common.ui.Appbar
 import app.ma.reveal.common.ui.EmptyStateFaces
 import app.ma.reveal.common.ui.LoadingBox
@@ -52,7 +53,8 @@ fun CreateSlides(
     onPreviousSlideClick: (navigator: WebViewNavigator) -> Unit,
     onNextSlideClick: (navigator: WebViewNavigator) -> Unit,
     onAddSlideClick: (content: String, navigator: WebViewNavigator, webViewState: WebViewState?) -> Unit,
-    onDiscardPresentation: () -> Unit
+    onDiscardPresentation: () -> Unit,
+    deviceConfiguration: DeviceConfiguration
 ) {
     var showAddSlideDialog by remember { mutableStateOf(false) }
     var slideContent by remember { mutableStateOf("") }

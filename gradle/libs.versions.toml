@@ -26,6 +26,7 @@ navigationCompose = "2.8.0-alpha10"
 coroutines = "1.10.2"
 voyager = "1.1.0-beta01"
 adaptive = "1.1.1"
+datastore = "1.1.7"
 
 [libraries]
 filekit-core = { module = "io.github.vinceglb:filekit-core", version.ref = "filekitCore" }
@@ -78,6 +79,9 @@ voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", v
 android-webkit = "androidx.webkit:webkit:1.13.0"
 
 material3-adaptive = { module = "org.jetbrains.compose.material3.adaptive:adaptive", version.ref = "adaptive" }
+
+datastore = { module = "androidx.datastore:datastore", version.ref = "datastore" }
+datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

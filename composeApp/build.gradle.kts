@@ -60,6 +60,9 @@ kotlin {
 
             implementation(libs.napier)
             implementation(libs.material3.adaptive)
+
+            api(libs.datastore.preferences)
+            api(libs.datastore)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

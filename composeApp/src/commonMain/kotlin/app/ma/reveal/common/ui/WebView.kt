@@ -14,6 +14,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -25,7 +26,9 @@ import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewNavigator
+import dev.datlag.kcef.KCEF
 import io.github.aakira.napier.Napier
+import kotlinx.coroutines.launch
 
 @Composable
 fun RevealWebView(
@@ -40,7 +43,7 @@ fun RevealWebView(
 ) {
     var initialized by remember { mutableStateOf(false) }
 
-    // todo: must be refactored, KCEF should be initialized only once
+    val scope = rememberCoroutineScope()
     LaunchedEffect(Unit) {
         kcefSetup(
             onInitialized = { initialized = true },
@@ -64,6 +67,13 @@ fun RevealWebView(
             }
         }
         onDispose { }
+    }
+    DisposableEffect(Unit) {
+        onDispose {
+            scope.launch {
+                KCEF.dispose()
+            }
+        }
     }
 
     Box(modifier = modifier.fillMaxSize()) {
