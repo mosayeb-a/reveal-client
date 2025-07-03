@@ -54,7 +54,11 @@ fun AppNavigation(
             TopLevelRoute(
                 isExpandedScreen = isExpandedScreen,
                 deviceConfiguration = deviceConfiguration,
-                onCreateClicked = { navController.navigate(CreateSlidesScreen) }
+                onCreateClicked = {
+                    navController.navigate(CreateSlidesScreen) {
+                        popUpTo("top_level_route") { inclusive = false }
+                    }
+                }
             )
         }
 
@@ -68,11 +72,15 @@ fun AppNavigation(
                 viewState = state,
                 webViewState = webViewState,
                 navigator = navigator,
-                onBack = { navController.popBackStack() },
+                onBack = {
+                    navController.navigate("top_level_route") {
+                        popUpTo("top_level_route") { inclusive = false }
+                    }
+                },
                 onSavedClick = {
                     viewModel.savePresentation { id ->
                         navController.navigate("top_level_route") {
-                            popUpTo("top_level_route") { inclusive = true }
+                            popUpTo("top_level_route") { inclusive = false }
                         }
                     }
                 },

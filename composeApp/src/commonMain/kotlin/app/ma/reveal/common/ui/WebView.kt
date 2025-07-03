@@ -22,11 +22,11 @@ import androidx.compose.ui.unit.dp
 import app.ma.reveal.common.BOTTOM_BAR_HEIGHT
 import app.ma.reveal.common.configureWebView
 import app.ma.reveal.common.kcefSetup
+import app.ma.reveal.common.onWebviewDisposed
 import com.multiplatform.webview.web.WebView
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
 import com.multiplatform.webview.web.rememberWebViewNavigator
-import dev.datlag.kcef.KCEF
 import io.github.aakira.napier.Napier
 import kotlinx.coroutines.launch
 
@@ -71,7 +71,7 @@ fun RevealWebView(
     DisposableEffect(Unit) {
         onDispose {
             scope.launch {
-                KCEF.dispose()
+                onWebviewDisposed()
             }
         }
     }

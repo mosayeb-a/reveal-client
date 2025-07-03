@@ -2,35 +2,26 @@ package app.ma.reveal.common
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.drawWithContent
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.graphics.drawscope.clipRect
-import androidx.compose.ui.graphics.drawscope.translate
 import androidx.compose.ui.unit.dp
-import androidx.datastore.core.DataStore
-import androidx.datastore.preferences.core.PreferenceDataStoreFactory
-import androidx.datastore.preferences.core.Preferences
 import androidx.window.core.layout.WindowHeightSizeClass
 import androidx.window.core.layout.WindowSizeClass
 import androidx.window.core.layout.WindowWidthSizeClass
-import com.multiplatform.webview.web.IWebView
 import com.multiplatform.webview.web.NativeWebView
-import io.github.vinceglb.filekit.PlatformFile
 import kotlinx.datetime.Instant
 import kotlinx.datetime.TimeZone
 import kotlinx.datetime.toLocalDateTime
-import okio.Path.Companion.toPath
 import org.koin.core.component.KoinComponent
-import org.koin.core.component.inject
-import org.koin.java.KoinJavaComponent.inject
+import org.koin.core.component.get
 import java.text.SimpleDateFormat
 import java.util.Locale
-import org.koin.core.component.get
+
 expect suspend fun kcefSetup(
     onInitialized: () -> Unit,
     onError: (Throwable?) -> Unit = {}
 )
 
+expect suspend fun onWebviewDisposed()
 
 expect fun getBaseAssetPath(): String
 

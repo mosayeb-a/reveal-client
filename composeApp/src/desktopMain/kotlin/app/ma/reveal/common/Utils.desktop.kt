@@ -78,3 +78,7 @@ actual fun getBaseAssetPath(): String = "http://127.0.0.1:8080/files/reveal"
 actual fun configureWebView(webView: NativeWebView) {
 
 }
+
+actual suspend fun onWebviewDisposed() {
+    KCEF.dispose()
+}

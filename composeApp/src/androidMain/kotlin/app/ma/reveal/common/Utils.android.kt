@@ -23,3 +23,6 @@ actual fun configureWebView(webView: NativeWebView) {
         isHorizontalScrollBarEnabled = false
     }
 }
+
+actual suspend fun onWebviewDisposed() {
+}

@@ -7,4 +7,4 @@ composeApp/build
 composeApp/cache
 composeApp/kcef-bundle/*
 composeApp/kcef-bundle/locales
-
+composeApp/reveal.preferences_pb
