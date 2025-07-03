@@ -27,8 +27,8 @@ class KCEFDataStore(private val dataStore: DataStore<Preferences>) {
         val currentState = isInitialized.first()
         if (!currentState) {
             setInitialized(true)
-            return false // Not initialized, proceed with initialization
+            return false
         }
-        return true // Already initialized
+        return true
     }
 }

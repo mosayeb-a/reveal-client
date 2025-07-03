@@ -1,20 +1,19 @@
 package app.ma.reveal.feature.create
 
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
-import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Done
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,14 +29,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.backhandler.BackHandler
+import androidx.compose.ui.graphics.Color.Companion.Black
 import androidx.compose.ui.unit.dp
-import app.ma.reveal.common.BOTTOM_BAR_HEIGHT
 import app.ma.reveal.common.DeviceConfiguration
 import app.ma.reveal.common.ui.Appbar
 import app.ma.reveal.common.ui.EmptyStateFaces
 import app.ma.reveal.common.ui.LoadingBox
 import app.ma.reveal.common.ui.Message
 import app.ma.reveal.common.ui.RevealWebView
+import app.ma.reveal.feature.create.component.SlideContentEditor
 import com.multiplatform.webview.web.WebViewNavigator
 import com.multiplatform.webview.web.WebViewState
 
@@ -56,11 +56,10 @@ fun CreateSlides(
     onDiscardPresentation: () -> Unit,
     deviceConfiguration: DeviceConfiguration
 ) {
-    var showAddSlideDialog by remember { mutableStateOf(false) }
-    var slideContent by remember { mutableStateOf("") }
     var showSaveDialog by remember { mutableStateOf(false) }
+    var markdownContent by remember { mutableStateOf("") }
 
-    BackHandler(true) {
+    BackHandler(enabled = true) {
         if (viewState.slides.isEmpty()) {
             onBack()
         } else {
@@ -78,9 +77,16 @@ fun CreateSlides(
                         contentDescription = "back"
                     )
                 }
-                IconButton(
-                    onClick = onSavedClick
-                ) {
+                Text(
+                    text = viewState.presentationId ?: "",
+                    modifier = Modifier
+                        .weight(1f)
+                        .padding(horizontal = 8.dp),
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleMedium
+                )
+                IconButton(onClick = onSavedClick) {
                     Icon(
                         imageVector = Icons.Rounded.Done,
                         contentDescription = "save"
@@ -88,126 +94,97 @@ fun CreateSlides(
                 }
             }
         },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                modifier = Modifier.padding(
-                    bottom = animateDpAsState(
-                        targetValue = if (viewState.slides.count() > 1) BOTTOM_BAR_HEIGHT else 0.dp,
-                        animationSpec = tween(durationMillis = 300)
-                    ).value
-                ),
-                onClick = { showAddSlideDialog = true },
-                icon = { Icon(Icons.Rounded.Add, contentDescription = "Add Slide") },
-                text = { Text("Add Slide") },
-                contentColor = MaterialTheme.colorScheme.onPrimary,
-                containerColor = MaterialTheme.colorScheme.primary,
-                elevation = FloatingActionButtonDefaults.elevation(
-                    defaultElevation = 2.dp,
-                    pressedElevation = 3.dp
-                )
-            )
-        }
     ) { paddingValues ->
         Box(
             modifier = Modifier
+                .fillMaxSize()
                 .padding(paddingValues)
-                .fillMaxSize(),
-            contentAlignment = Alignment.Center
         ) {
-            if (viewState.slides.isEmpty()) {
-                Message(
-                    message = "No slides added yet. Use the + button to add a slide.",
-                    faces = EmptyStateFaces.suggestion
+            Column(
+                modifier = Modifier.fillMaxSize()
+                    .verticalScroll(rememberScrollState())
+            ) {
+                if (viewState.slides.isNotEmpty() && webViewState != null) {
+                    RevealWebView(
+                        modifier = Modifier
+                            .padding(top = 56.dp)
+                            .weight(1f)
+                            .fillMaxWidth(),
+                        state = webViewState,
+                        navigator = navigator,
+                        onError = {},
+                        onPreviousClick = { onPreviousSlideClick(navigator) },
+                        onNextClick = { onNextSlideClick(navigator) },
+                        showSlideNavigation = false,
+                        onCreated = {}
+                    )
+                } else {
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxWidth()
+                            .background(MaterialTheme.colorScheme.secondary),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Message(
+                            modifier = Modifier,
+                            message = "No slides added yet. Use the + button to add a slide.",
+                            faces = EmptyStateFaces.suggestion
+                        )
+                    }
+                }
+
+                HorizontalDivider(
+                    thickness = 1.dp,
+                    color = Black.copy(alpha = 0.13f)
                 )
-            } else if (webViewState != null) {
-                RevealWebView(
-                    modifier = Modifier.fillMaxSize(),
-                    state = webViewState,
-                    navigator = navigator,
-                    onError = { },
-                    onPreviousClick = { onPreviousSlideClick(navigator) },
-                    onNextClick = { onNextSlideClick(navigator) },
-                    showSlideNavigation = viewState.slides.count() > 1,
-                    onCreated = {}
+
+                SlideContentEditor(
+                    value = markdownContent,
+                    onValueChange = { markdownContent = it },
+                    onActionClick = {
+                        onAddSlideClick(markdownContent, navigator, webViewState)
+                        markdownContent = ""
+                    }
                 )
             }
 
             if (viewState.isLoading) {
                 LoadingBox()
             }
-        }
 
-        if (showAddSlideDialog) {
-            AlertDialog(
-                onDismissRequest = { showAddSlideDialog = false },
-                title = { Text("Add Slide") },
-                text = {
-                    androidx.compose.material3.OutlinedTextField(
-                        value = slideContent,
-                        onValueChange = { slideContent = it },
-                        label = { Text("Markdown Content (use # for titles)") },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        maxLines = 10
-                    )
-                },
-                confirmButton = {
-                    Button(
-                        onClick = {
-                            if (slideContent.isNotBlank()) {
-                                onAddSlideClick(slideContent, navigator, webViewState)
-                                showAddSlideDialog = false
-                                slideContent = ""
-                            }
-                        },
-                        enabled = slideContent.isNotBlank()
-                    ) {
-                        Text("Add")
+            if (showSaveDialog) {
+                AlertDialog(
+                    onDismissRequest = { showSaveDialog = false },
+                    containerColor = MaterialTheme.colorScheme.surface,
+                    title = { Text("Save Presentation") },
+                    text = { Text("Do you want to save your presentation before exiting?") },
+                    confirmButton = {
+                        TextButton(
+                            onClick = {
+                                showSaveDialog = false
+                                onSavedClick()
+                            },
+                            enabled = viewState.slides.isNotEmpty(),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            Text("Save")
+                        }
+                    },
+                    dismissButton = {
+                        TextButton(
+                            onClick = {
+                                showSaveDialog = false
+                                onDiscardPresentation()
+                                onBack()
+                            },
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
+                        ) {
+                            Text("Discard")
+                        }
                     }
-                },
-                dismissButton = {
-                    Button(onClick = {
-                        showAddSlideDialog = false
-                        slideContent = ""
-                    }) {
-                        Text("Cancel")
-                    }
-                }
-            )
-        }
-
-        if (showSaveDialog) {
-            AlertDialog(
-                onDismissRequest = { showSaveDialog = false },
-                containerColor = MaterialTheme.colorScheme.surface,
-                title = { Text("Save Presentation") },
-                text = { Text("Do you want to save your presentation before exiting?") },
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            showSaveDialog = false
-                            onSavedClick()
-                        },
-                        enabled = viewState.slides.count() >= 1,
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
-                    ) {
-                        Text("Save")
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        onClick = {
-                            showSaveDialog = false
-                            onDiscardPresentation()
-                            onBack()
-                        },
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)
-                    ) {
-                        Text("Discard")
-                    }
-                }
-            )
+                )
+            }
         }
     }
 }

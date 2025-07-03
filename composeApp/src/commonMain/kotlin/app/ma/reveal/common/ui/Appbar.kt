@@ -20,8 +20,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import app.ma.reveal.common.cardBottomElevation
-
 
 @Composable
 fun Appbar(
