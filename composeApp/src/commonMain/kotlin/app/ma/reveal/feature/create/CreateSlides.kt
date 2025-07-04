@@ -102,12 +102,11 @@ fun CreateSlides(
         ) {
             Column(
                 modifier = Modifier.fillMaxSize()
-                    .verticalScroll(rememberScrollState())
             ) {
                 if (viewState.slides.isNotEmpty() && webViewState != null) {
                     RevealWebView(
                         modifier = Modifier
-                            .padding(top = 56.dp)
+//                            .padding(top = 56.dp)
                             .weight(1f)
                             .fillMaxWidth(),
                         state = webViewState,
